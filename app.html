@@ -207,3 +207,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     findBestNearby(p.lat, p.lng);
   });
 });
+          // Place this in your app.js after user location is set:
+async function fetchSoilData(lat, lon) {
+  const key = 'YOUR_TARLA_API_KEY';  // Replace with your actual key
+  const now = new Date();
+  const month = now.getMonth() + 1;  // JS months are 0-11
+  const year = now.getFullYear();
+
+  try {
+    const resp = await fetch(`https://world.tarla.io/v3/drought?lat=${lat}&lng=${lon}&month=${month}&year=${year}`, {
+      headers: { 'apikey': key }
+    });
+    if (!resp.ok) throw new Error("API error: " + resp.status);
+    const data = await resp.json();
+
+    const info = data.drought
+      ? `Drought (SPI12): ${data.drought.spi12Info} — PDSI: ${data.drought.pdsiInfo}`
+      : "No drought data";
+
+    if (userMarker) {
+      userMarker.bindPopup(`📍 You are here<br>${info}`).openPopup();
+    }
+  } catch (err) {
+    console.error("Failed to fetch soil data:", err);
+  }
+}
+
+// Modify your "Use My Location" and geolocation callback to call this:
+navigator.geolocation.getCurrentPosition((pos) => {
+  const { latitude, longitude } = pos.coords;
+  setUserLocation(latitude, longitude);
+  map.setView([latitude, longitude], 12);
+  fetchSoilData(latitude, longitude);  // <-- call here
+});
+
+
