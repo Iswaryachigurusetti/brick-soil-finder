@@ -4,108 +4,78 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Soil Finder for Brick Makers</title>
-
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
   <style>
-    /* Reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+      margin:0;
+      font-family:Arial, sans-serif;
+      background: linear-gradient(135deg, #f3e5ab, #f9d976);
+      color:#333;
+      text-align:center;
     }
-
     header {
-      background: #b43c27;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      background:#8d5524;
+      color:white;
+      padding:15px;
+      font-size:1.5rem;
     }
-
-    header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 5px;
-    }
-
-    header p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    #map {
-      flex: 1;
-      border-radius: 12px;
-      margin: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-    }
-
-    footer {
-      background: #222;
-      color: #ddd;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.8rem;
-    }
+    #map { height: 90vh; width: 100%; }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>🧱 Soil Finder</h1>
-    <p>Discover the best soil nearby for brick making</p>
-  </header>
-
+  <header>🧱 Soil Finder for Brick Makers</header>
   <div id="map"></div>
 
-  <footer>
-    Made with ❤️ for Brick Makers | Powered by Leaflet & OpenStreetMap
-  </footer>
-
-  <!-- Leaflet JS -->
+  <!-- Leaflet Map -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
   <script>
-    // Initialize map
+    // Initialize the map
     var map = L.map('map').setView([20.5937, 78.9629], 5);
-
-    // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Show user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var lat = position.coords.latitude;
-        var lon = position.coords.longitude;
+    var userMarker;
 
-        L.marker([lat, lon]).addTo(map)
-          .bindPopup("<b>📍 You are here</b>")
-          .openPopup();
+    // Function to fetch soil data from SoilGrids API
+    async function fetchSoilData(lat, lon) {
+      const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lat=${lat}&lon=${lon}`;
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
 
-        map.setView([lat, lon], 12);
-      });
+        // Extract key soil properties
+        const clay = data.properties.clay.mean[0].values[0].value;
+        const sand = data.properties.sand.mean[0].values[0].value;
+        const silt = data.properties.silt.mean[0].values[0].value;
+        const soc = data.properties.soc.mean[0].values[0].value;
+
+        userMarker.bindPopup(`
+          📍 Soil Data:<br>
+          🟤 Clay: ${clay}%<br>
+          🟡 Sand: ${sand}%<br>
+          ⚪ Silt: ${silt}%<br>
+          🌱 Organic Carbon: ${soc} g/kg
+        `).openPopup();
+      } catch (err) {
+        console.error("Error fetching soil data:", err);
+      }
     }
 
-    // Example soil locations
-    var soils = [
-      {lat: 25.3176, lon: 82.9739, name: "Varanasi - Good Clay Soil"},
-      {lat: 22.5726, lon: 88.3639, name: "Kolkata - Alluvial Soil"},
-      {lat: 19.0760, lon: 72.8777, name: "Mumbai - Laterite Soil"}
-    ];
+    // Get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 You are here");
+        map.setView([lat, lon], 12);
 
-    soils.forEach(function(loc) {
-      L.marker([loc.lat, loc.lon]).addTo(map)
-        .bindPopup("🧱 " + loc.name);
-    });
+        // Fetch soil data for this location
+        fetchSoilData(lat, lon);
+      }, function() {
+        alert("Location access denied. Please enable location to see soil data.");
+      });
+    }
   </script>
-
 </body>
 </html>
