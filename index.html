@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Best Soil Finder for Brick Makers</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet Geocoder (search box) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+  />
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Best Soil Finder for Brick Makers</h1>
+    <div class="controls">
+      <button id="locateBtn">📍 Use My Location</button>
+
+      <label class="radius">
+        Radius (km)
+        <input id="radiusInput" type="number" min="10" max="1000" value="200" />
+      </label>
+
+      <label class="types">
+        Soil types:
+        <select id="soilTypeFilter" multiple>
+          <option selected>Alluvial</option>
+          <option selected>Clay</option>
+          <option selected>Clay-Loam</option>
+          <option selected>Loam</option>
+          <option>Red</option>
+          <option>Black</option>
+          <option>Lateritic</option>
+          <option>Sandy</option>
+        </select>
+      </label>
+
+      <button id="findBtn">🔎 Find Best Nearby</button>
+    </div>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <h2>Results</h2>
+      <ol id="results"></ol>
+      <p class="hint">Tip: click a result to focus it on the map.</p>
+    </aside>
+
+    <div id="map"></div>
+  </main>
+
+  <footer>
+    <small>Demo data included. Replace with your own survey/CSV later.</small>
+  </footer>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <!-- App -->
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

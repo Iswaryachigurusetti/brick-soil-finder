@@ -1,0 +1,22 @@
+[
+  {"name":"Kolkata","lat":22.5726,"lon":88.3639,"soilType":"Alluvial","suitability":90,"notes":"Fine alluvial deposits along the Hooghly."},
+  {"name":"Varanasi","lat":25.3176,"lon":82.9739,"soilType":"Alluvial","suitability":85,"notes":"Alluvial clay along the Ganga plains."},
+  {"name":"Patna","lat":25.5941,"lon":85.1376,"soilType":"Alluvial","suitability":84,"notes":"Ganga floodplain alluvium."},
+  {"name":"Prayagraj","lat":25.4358,"lon":81.8463,"soilType":"Alluvial","suitability":80,"notes":"Mixed alluvial clays."},
+  {"name":"Kanpur","lat":26.4499,"lon":80.3319,"soilType":"Clay","suitability":78,"notes":"Clay-rich belts used for traditional bricks."},
+  {"name":"Lucknow","lat":26.8467,"lon":80.9462,"soilType":"Alluvial","suitability":79,"notes":"Alluvial with good plasticity."},
+  {"name":"Delhi","lat":28.6139,"lon":77.2090,"soilType":"Alluvial","suitability":75,"notes":"Alluvial with variable silt."},
+  {"name":"Jaipur","lat":26.9124,"lon":75.7873,"soilType":"Loam","suitability":65,"notes":"Loamy patches suitable with conditioning."},
+  {"name":"Ahmedabad","lat":23.0225,"lon":72.5714,"soilType":"Alluvial","suitability":70,"notes":"Sabarmati alluvium."},
+  {"name":"Mumbai","lat":19.0760,"lon":72.8777,"soilType":"Lateritic","suitability":55,"notes":"Laterite; may need additives."},
+  {"name":"Pune","lat":18.5204,"lon":73.8567,"soilType":"Clay-Loam","suitability":72,"notes":"Clay-loam mixes in outskirts."},
+  {"name":"Nagpur","lat":21.1458,"lon":79.0882,"soilType":"Black","suitability":60,"notes":"Black cotton soil; adjust mix."},
+  {"name":"Hyderabad","lat":17.3850,"lon":78.4867,"soilType":"Clay","suitability":68,"notes":"Clayey pockets around periphery."},
+  {"name":"Chennai","lat":13.0827,"lon":80.2707,"soilType":"Alluvial","suitability":74,"notes":"Coastal alluvium."},
+  {"name":"Coimbatore","lat":11.0168,"lon":76.9558,"soilType":"Clay","suitability":70,"notes":"Clay lenses in Noyyal basin."},
+  {"name":"Bengaluru","lat":12.9716,"lon":77.5946,"soilType":"Red","suitability":62,"notes":"Red loam; may need stabilization."},
+  {"name":"Bhubaneswar","lat":20.2961,"lon":85.8245,"soilType":"Alluvial","suitability":80,"notes":"Mahanadi delta alluvium."},
+  {"name":"Guwahati","lat":26.1445,"lon":91.7362,"soilType":"Alluvial","suitability":77,"notes":"Brahmaputra alluvium."},
+  {"name":"Bhopal","lat":23.2599,"lon":77.4126,"soilType":"Clay","suitability":72,"notes":"Clay loams near lakes."},
+  {"name":"Ranchi","lat":23.3441,"lon":85.3096,"soilType":"Red","suitability":58,"notes":"Red soils; needs stabilization."}
+]
