@@ -2,80 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soil Finder for Brick Makers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brick Soil Evaluator</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    body {
-      margin:0;
-      font-family:Arial, sans-serif;
-      background: linear-gradient(135deg, #f3e5ab, #f9d976);
-      color:#333;
-      text-align:center;
-    }
-    header {
-      background:#8d5524;
-      color:white;
-      padding:15px;
-      font-size:1.5rem;
-    }
-    #map { height: 90vh; width: 100%; }
+    body { margin:0; font-family:Arial, sans-serif; }
+    #map { height:100vh; width:100vw; }
+    .ideal { background: green; color: white; padding:2px 4px; border-radius:3px; }
+    .bad { background: red; color: white; padding:2px 4px; border-radius:3px; }
+    .leaflet-control-layers { max-height:200px; overflow-y:auto; }
   </style>
 </head>
 <body>
-  <header>🧱 Soil Finder for Brick Makers</header>
   <div id="map"></div>
-
-  <!-- Leaflet Map -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
   <script>
-    // Initialize the map
-    var map = L.map('map').setView([20.5937, 78.9629], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    // Initialize map
+    const map = L.map('map').setView([20.5937, 78.9629], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'© OpenStreetMap contributors' }).addTo(map);
 
-    var userMarker;
+    let userMarker;
 
-    // Function to fetch soil data from SoilGrids API
-    async function fetchSoilData(lat, lon) {
+    // Function to fetch soil data
+    async function fetchSoil(lat, lon) {
       const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lat=${lat}&lon=${lon}`;
       try {
-        const resp = await fetch(url);
-        const data = await resp.json();
-
-        // Extract key soil properties
-        const clay = data.properties.clay.mean[0].values[0].value;
-        const sand = data.properties.sand.mean[0].values[0].value;
-        const silt = data.properties.silt.mean[0].values[0].value;
-        const soc = data.properties.soc.mean[0].values[0].value;
-
-        userMarker.bindPopup(`
-          📍 Soil Data:<br>
-          🟤 Clay: ${clay}%<br>
-          🟡 Sand: ${sand}%<br>
-          ⚪ Silt: ${silt}%<br>
-          🌱 Organic Carbon: ${soc} g/kg
-        `).openPopup();
-      } catch (err) {
-        console.error("Error fetching soil data:", err);
+        const res = await fetch(url);
+        const json = await res.json();
+        // get clay, sand, silt
+        const clay = json.properties.clay.mean[0].values[0].value;
+        const sand = json.properties.sand.mean[0].values[0].value;
+        const silt = json.properties.silt.mean[0].values[0].value;
+        return { clay, sand, silt };
+      } catch (e) {
+        console.error('Soil fetch error', e);
+        return null;
       }
     }
 
-    // Get user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        var lat = pos.coords.latitude;
-        var lon = pos.coords.longitude;
-        userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 You are here");
-        map.setView([lat, lon], 12);
+    // Evaluate suitability
+    function isGoodSoil({ clay, sand, silt }) {
+      return (clay >= 25 && clay <= 40 && sand >= 30 && sand <= 50 && silt <= 30);
+    }
 
-        // Fetch soil data for this location
-        fetchSoilData(lat, lon);
-      }, function() {
-        alert("Location access denied. Please enable location to see soil data.");
+    // On obtaining location
+    async function onLocation(lat, lon) {
+      if (userMarker) map.removeLayer(userMarker);
+      userMarker = L.marker([lat, lon]).addTo(map).bindPopup('You are here').openPopup();
+      map.setView([lat, lon], 13);
+
+      // sample nearby points (~1 km grid)
+      const del = 0.01; // ~1.1 km
+      const points = [
+        [lat, lon],
+        [lat+del, lon],
+        [lat-del, lon],
+        [lat, lon+del],
+        [lat, lon-del],
+        [lat+del, lon+del],
+        [lat+del, lon-del],
+        [lat-del, lon+del],
+        [lat-del, lon-del],
+      ];
+
+      points.forEach(async ([lat2, lon2]) => {
+        const soil = await fetchSoil(lat2, lon2);
+        if (!soil) return;
+        const good = isGoodSoil(soil);
+        const marker = L.marker([lat2, lon2]).addTo(map);
+        const label = good ? '<span class="ideal">Best for Bricks</span>' : '<span class="bad">Not Ideal</span>';
+        marker.bindPopup(`
+          ${label}<br>
+          Clay: ${soil.clay}%<br>
+          Sand: ${soil.sand}%<br>
+          Silt: ${soil.silt}%`);
       });
     }
+
+    // Geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => onLocation(pos.coords.latitude, pos.coords.longitude),
+        err => { alert('Could not get location: ' + err.message); }
+      );
+    } else {
+      alert('Geolocation not supported');
+    }
+
+    // Optional: add search box (geocoder)
+    L.Control.geocoder = L.Control.extend({
+      onAdd: function(map) {
+        const input = L.DomUtil.create('input');
+        input.setAttribute('type','search');
+        input.setAttribute('placeholder','Search location (enter)');
+        input.style.padding = '4px';
+        input.style.width = '200px';
+        input.addEventListener('keydown', async e => {
+          if (e.key === 'Enter' && input.value.trim()) {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input.value)}`);
+            const j = await resp.json();
+            if (j[0]) onLocation(parseFloat(j[0].lat), parseFloat(j[0].lon));
+          }
+        });
+        return input;
+      },
+      onRemove: ()=>{}
+    });
+    L.control.geocoder = function(opts){ return new L.Control.geocoder(opts); }
+    L.control.geocoder({ position:'topleft' }).addTo(map);
+
   </script>
 </body>
 </html>
